@@ -104,7 +104,11 @@ class DBTasks(Properties):
     async def get_all_strings(self, session: AsyncSession):
         statement = select(String)
         result = await session.exec(statement)
-
-        return result.all()
+        result_list = result.all()
+        return {
+            "data": result_list,
+            "count": len(result_list),
+            "filters_applied": {}
+        }
         
 

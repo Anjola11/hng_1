@@ -4,7 +4,7 @@ from src.db.main import get_session
 from src.strings.services import DBTasks
 from src.strings.models import String
 from src.strings.schemas import StringRequest
-from src.strings.schemas import StringResponse
+from src.strings.schemas import StringResponse, allStringResponse
 from typing import List
 
 router = APIRouter()
@@ -16,7 +16,7 @@ async def add_string(string: StringRequest,session: AsyncSession = Depends(get_s
 
     return string_add
 
-@router.get("/strings", status_code=status.HTTP_200_OK,response_model=List[StringResponse])
+@router.get("/strings", status_code=status.HTTP_200_OK,response_model=allStringResponse)
 async def get_all_strings(session: AsyncSession = Depends(get_session)):
     strings = await db_task.get_all_strings(session)
 
