@@ -71,19 +71,16 @@ class DBTasks(Properties):
 
         string_properties = self.all_properties(string_value)
     
-        new_string = String(value= string_value, **string_properties)
+        new_string = String(id=string_properties.get("sha256_hash"),
+                            value= string_value,
+                            properties = string_properties)
 
         try:
             
             session.add(new_string)
             await session.commit()
             await session.refresh(new_string)
-            return {
-                "id": new_string.sha256_hash,
-                "value": string_value,
-                "properties": string_properties,
-                "created_at": new_string.created_at
-            }
+            return new_string
 
         except DatabaseError:
             await session.rollback()
@@ -92,6 +89,22 @@ class DBTasks(Properties):
                 detail="Internal server error: Failed to add string"
             )
 
+    async def get_string(self, string, session:AsyncSession):
+        string_value = await self.check_string(string, session)
+
+        if string_value:
+            return string_value
         
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="String does not exist in the system."
+        )
+    
+
+    async def get_all_strings(self, session: AsyncSession):
+        statement = select(String)
+        result = await session.exec(statement)
+
+        return result.all()
         
 

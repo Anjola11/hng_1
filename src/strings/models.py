@@ -9,13 +9,9 @@ def utc_now():
 class String(SQLModel, table=True):
     __tablename__ = "strings"
 
-    sha256_hash: str = Field(unique=True, index=True, primary_key=True)
-    value: str
-    length: int
-    is_palindrome: bool
-    unique_characters: int
-    word_count: int
-    character_frequency_map: Dict[str, Any] = Field(sa_column=Column(pg.JSONB))
+    id: str = Field(primary_key=True)
+    value: str = Field(index=True)
+    properties: Dict[str, Any] = Field(sa_column=Column(pg.JSONB))
     created_at: datetime = Field(
         default_factory=utc_now,
         sa_column=Column(pg.TIMESTAMP(timezone=True))
