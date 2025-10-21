@@ -1,25 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.main import get_session
-from src.strings.services import Properties
+from src.strings.services import DBTasks
 from src.strings.models import String
+from src.strings.schemas import StringRequest
 
 router = APIRouter()
-properties = Properties()
+db_task = DBTasks()
 
-@router.post("/{string}")
-async def add_string(string,session: AsyncSession = Depends(get_session)):
-    string_properties = properties.all_properties(string)
-    
-    new_string = String(**string_properties)
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def add_string(string: StringRequest,session: AsyncSession = Depends(get_session)):
+    string_add = await db_task.add_string(string.value, session)
 
-    session.add(new_string)
-    await session.commit()
-
-    return {
-        "id": new_string.sha256_hash,
-        "value": string,
-        "properties": string_properties,
-        "created_at": new_string.created_at
-    }
+    return string_add
 

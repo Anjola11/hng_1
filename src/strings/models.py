@@ -10,7 +10,7 @@ class String(SQLModel, table=True):
     __tablename__ = "strings"
 
     sha256_hash: str = Field(unique=True, index=True, primary_key=True)
-    string: str
+    value: str
     length: int
     is_palindrome: bool
     unique_characters: int
