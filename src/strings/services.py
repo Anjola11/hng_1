@@ -18,11 +18,12 @@ class Properties:
         return reversed_str == normalised
 
     def unique_characters(self, string):
-        normalised = string.replace(" ", "")
-        unique = set(normalised)
+        unique = set(string)
         return len(unique)
 
     def word_count(self, string):
+        if not string or string.isspace():
+            return 0
         word_list = string.split()
         return len(word_list)
 
@@ -45,7 +46,7 @@ class Properties:
             "character_frequency_map": self.character_frequency_map(string)
         }
         return properties
-
+    
 
 class DBTasks(Properties):
     def get_string_properties(self, string: DBStringResponse):

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 from src.db.main import get_session
 from src.strings.services import DBTasks
-from src.strings.schemas import StringRequest, StringResponse, allStringResponse, NaturalLanguageResponse
+from src.strings.schemas import StringRequest
 import json
 from datetime import datetime
 
@@ -28,13 +28,20 @@ async def add_string(string: StringRequest, session: AsyncSession = Depends(get_
     )
 
 
-@router.get("/filter-by-natural-language", status_code=status.HTTP_200_OK, response_model=NaturalLanguageResponse)
+@router.get("/filter-by-natural-language", status_code=status.HTTP_200_OK)
 async def filter_by_nl(query: str, session: AsyncSession = Depends(get_session)):
-    results = await db_task.parse_natural_query(query, session=session)
-    return results
+    try:
+        results = await db_task.parse_natural_query(query, session=session)
+        return results
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": str(e)}
+        )
 
 
-@router.get("/", status_code=status.HTTP_200_OK, response_model=allStringResponse)
+@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("", status_code=status.HTTP_200_OK)
 async def get_all_strings(
     is_palindrome: bool | None = None,
     min_length: int | None = None,
@@ -43,21 +50,38 @@ async def get_all_strings(
     contains_character: str | None = None,
     session: AsyncSession = Depends(get_session)
 ):
-    strings = await db_task.get_all_strings(
-        is_palindrome,
-        min_length,
-        max_length,
-        word_count,
-        contains_character,
-        session
-    )
-    return strings
+    try:
+        # Validate contains_character if provided
+        if contains_character is not None and len(contains_character) != 1:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"detail": "Invalid query parameter values or types"}
+            )
+        
+        strings = await db_task.get_all_strings(
+            is_palindrome,
+            min_length,
+            max_length,
+            word_count,
+            contains_character,
+            session
+        )
+        return strings
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": "Invalid query parameter values or types"}
+        )
 
 
-@router.get("/{string_value}", status_code=status.HTTP_200_OK, response_model=StringResponse)
+@router.get("/{string_value}", status_code=status.HTTP_200_OK)
 async def get_string(string_value: str, session: AsyncSession = Depends(get_session)):
-    string = await db_task.get_string(string_value, session)
-    return string
+    try:
+        string = await db_task.get_string(string_value, session)
+        return string
+    except Exception as e:
+        # Re-raise HTTPException to maintain proper error handling
+        raise e
 
 
 @router.delete("/{string_value}", status_code=status.HTTP_204_NO_CONTENT)
