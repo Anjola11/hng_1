@@ -13,13 +13,6 @@ db_task = DBTasks()
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=StringResponse)
 async def add_string(string: StringRequest, session: AsyncSession = Depends(get_session)):
-    # Validate that value is a string
-    if not isinstance(string.value, str):
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail='Invalid data type for "value" (must be string)'
-        )
-    
     string_add = await db_task.add_string(string.value, session)
     return string_add
 
