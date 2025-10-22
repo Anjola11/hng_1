@@ -70,6 +70,7 @@ class DBTasks(Properties):
         statement = select(String).where(String.value == string)
         result = await session.exec(statement)
 
+
         return result.first()
     
     async def add_string(self, string_value:str, session: AsyncSession):
@@ -245,16 +246,21 @@ class DBTasks(Properties):
                 }
             }
 
-    async def delete_string(self,string_value:str, session:AsyncSession):
-        string = await self.get_string(string_value, session)
-
-        if string:
-            statement = delete(String).where(String.value == string_value)
-
-            await session.exec(statement)
-
-            await session.commit()
-
-            return {}
+    async def delete_string(self, string_value: str, session: AsyncSession):
+        
+        string_exists = await self.check_string(string_value, session)
+        
+        if not string_exists:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="String does not exist in the system"
+            )
+        
+        
+        statement = delete(String).where(String.value == string_value)
+        await session.exec(statement)
+        await session.commit()
+        
+        return None
         
         
