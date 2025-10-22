@@ -5,7 +5,7 @@ from src.strings.services import DBTasks
 from src.strings.models import String
 from src.strings.schemas import StringRequest
 from src.strings.schemas import StringResponse, allStringResponse
-from typing import List
+from src.strings.schemas import NaturalLanguageResponse
 
 router = APIRouter()
 db_task = DBTasks()
@@ -16,13 +16,29 @@ async def add_string(string: StringRequest,session: AsyncSession = Depends(get_s
 
     return string_add
 
-@router.get("/strings", status_code=status.HTTP_200_OK,response_model=allStringResponse)
-async def get_all_strings(session: AsyncSession = Depends(get_session)):
-    strings = await db_task.get_all_strings(session)
+@router.get("/", status_code=status.HTTP_200_OK,response_model=allStringResponse)
+async def get_all_strings(is_palindrome: bool | None = None,
+    min_length: int | None = None,
+    max_length: int | None = None,
+    word_count: int | None = None,
+    contains_character: str | None = None, session: AsyncSession = Depends(get_session)):
+    strings = await db_task.get_all_strings(is_palindrome,
+                                            min_length,
+                                            max_length,
+                                            word_count,
+                                            contains_character,
+                                            session)
 
     return strings
 
+@router.get("/filter-by-natural-language", status_code=status.HTTP_200_OK, response_model=NaturalLanguageResponse)
+async def filter_by_nl(query: str, session: AsyncSession = Depends(get_session)):
+    
+    results = await db_task.parse_natural_query(query,session=session)
 
+    return results
+@router.delete("/{string_value}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_string(string: str, session= Depends(get_session)):
 @router.get("/{string_value}", status_code=status.HTTP_200_OK, response_model=StringResponse)
 async def get_string(string_value: str, session: AsyncSession = Depends(get_session)):
     string = await db_task.get_string(string_value, session)
