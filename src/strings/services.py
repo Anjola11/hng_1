@@ -89,7 +89,7 @@ class DBTasks(Properties):
                 "id": new_string.id,
                 "value": new_string.value,
                 "properties": string_properties,
-                "created_at": new_string.created_at
+                "created_at": new_string.created_at.isoformat()
             }
 
         except DatabaseError as e:
