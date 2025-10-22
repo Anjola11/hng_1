@@ -19,6 +19,7 @@ def json_serial(obj):
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def add_string(string: StringRequest, session: AsyncSession = Depends(get_session)):
     string_add = await db_task.add_string(string.value, session)
     return JSONResponse(
