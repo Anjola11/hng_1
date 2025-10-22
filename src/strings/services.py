@@ -246,7 +246,7 @@ class DBTasks(Properties):
             }
 
     async def delete_string(self,string_value:str, session:AsyncSession):
-        string = self.get_string(string_value, session)
+        string = await self.get_string(string_value, session)
 
         if string:
             statement = delete(String).where(String.value == string_value)
@@ -257,8 +257,4 @@ class DBTasks(Properties):
 
             return {}
         
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="String does not exist in the system."
-        )
-
+        

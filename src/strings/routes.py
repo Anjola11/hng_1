@@ -39,6 +39,9 @@ async def filter_by_nl(query: str, session: AsyncSession = Depends(get_session))
     return results
 @router.delete("/{string_value}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_string(string: str, session= Depends(get_session)):
+    deleted_string = await db_task.delete_string(string, session)
+
+    return deleted_string
 @router.get("/{string_value}", status_code=status.HTTP_200_OK, response_model=StringResponse)
 async def get_string(string_value: str, session: AsyncSession = Depends(get_session)):
     string = await db_task.get_string(string_value, session)
