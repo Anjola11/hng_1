@@ -26,18 +26,35 @@ app = FastAPI(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = exc.errors()
+    path = request.url.path
+    method = request.method
+
+    is_strings_endpoint = path == "/strings" or path == "/strings/"
+    if is_strings_endpoint and method == "GET":
+        for error in errors:
+            if error["type"] == "missing":
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={"detail":  'Invalid query parameter values or types'}
+                )
+        # For type errors
+        return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={"detail":  'Invalid query parameter values or types'}
+                )
     
-    # Check if it's a missing field error
-    for error in errors:
-        if error["type"] == "missing":
-            return JSONResponse(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                content={"detail": "Invalid request body or missing 'value' field"}
-            )
-    
-    # For wrong type errors, keep 422
-    return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-        content={"detail": "Invalid data type for 'value' (must be string)"}
-    )
+    if is_strings_endpoint and method == "POST":
+        # Check if it's a missing field error
+        for error in errors:
+            if error["type"] == "missing":
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content={"detail": 'Invalid request body or missing "value" field'}
+                )
+
+        # For wrong type errors, keep 422
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"detail": 'Invalid data type for "value" (must be string)'}
+        )
 app.include_router(router, prefix= "/strings",tags=["strings"])
